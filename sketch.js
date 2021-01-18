@@ -1,110 +1,67 @@
-var database ,dog,dog1,dog2
-var position
-//var form
-var feed,add
-var foodobject
-var Feedtime
-var Lastfeed, foodStockImg, fs;
-//Create variables here
+var dogImg, happyDogImg, dog, database, foodS, foodStock, canvas, lastFed, fedTime, foodObj, feed, addFood, food1, foodCount, input, milk, milkImg;
 
-function preload()
-
-{
-  dogimg1 = loadImage("dog1.png")
-  dogimg2 = loadImage("HappyDog.png");
-  foodStockImg = loadImage("FoodStock.png")
-  //load images here
-  
+function preload() {
+  dogImg = loadImage('images/Dog.png');
+  happyDogImg = loadImage('images/dogImg1.png');
+  milkImg = loadImage('images/Milk.png');
 }
 
 function setup() {
-	createCanvas(700, 700);
   database = firebase.database();
-  console.log(database);
- 
-  foodobject=new Food()
-  dog = createSprite(550,250,10,10);
-  dog.addImage(dogimg1)
-  dog.scale=0.2
 
-  fs = createSprite(170, 50, 20, 20);
-  fs.addImage(foodStockImg);
-  fs.scale = 0.1
- 
-  var dogo = database.ref('Food');
-  dogo.on("value", readPosition, showError);
-  feed = createButton("FEED DRAGO MILK")
-  feed.position(600,100)
-  feed.mousePressed(FeedDog)
-  add = createButton("ADD FOOD")
-  add.position(400,100)
-  add.mousePressed(AddFood)
+  dog = createSprite(650, 250);
+  dog.scale = 0.3;
+  dog.addImage(dogImg);
 
-
-} 
-
-function draw(){
- background(46,139,87);
-
- foodobject.display()
- 
- drawSprites();
+  milk = createSprite(565, 300);
+  milk.addImage(milkImg);
+  milk.scale = 0.1;
+  milk.visible = false;
+  milk.rotation = 55;
   
- fill(255,255,254);
- textSize(15);
+  food1 = new Food();
+  
+  food1.start();
 
+  addFood = createButton("Add food");
+  addFood.position(370, 45);
+  addFood.mousePressed(addFoods);
 
- fedtime=database.ref('FeedTime')
- fedtime.on("value",function(data){ Lastfeed=data.val(); });
- if(Lastfeed>=12)
- {
-   text("Last Fed :" + Lastfeed%12 + "PM", 150,100);
- }else if(Lastfeed ===0 )
- {
-   text("Last Fed : 12 AM" , 150,100)
- }else
- {
-   text("Last Fed :" + Lastfeed + "AM", 150,100);
- }
+  input = createInput("Your Dog's Name");
+  input.position(150, 70);
 
-drawSprites();
-}
-function readPosition(data){
-  position = data.val();
-  foodobject.updateFoodStock(position)
+  feed = createButton("Feed your Dog");
+  feed.position(450, 45);
+  feed.mousePressed(feedDog);
+
+  canvas = createCanvas(800, 400);
 }
 
-function showError(){
-  console.log("Error in writing to the database");
+function draw() {  
+  background(46, 139, 87);
+
+  food1.display();
+
+  drawSprites();
 }
 
-function writePosition(nazo){
-  if(nazo>0){
-    nazo=nazo-1
+function feedDog() {
+  food1.getFoodStock();
+  food1.updateFedTime();
+
+  if(foodCount === 0) {
+    foodCount = 0;
+    milk.visible = false;
+    dog.addImage(dogImg);
+  } else {
+    food1.updateFoodStock(foodCount - 1);
+    milk.visible = true;
+    dog.addImage(happyDogImg);
   }
-  else{
-    nazo=0
-  }
-  database.ref('/').set({
-    'Food': nazo
-  })
-
-}
-function AddFood(){
-position++
-database.ref('/').update({
-  Food:position
 }
 
-)
-}
-function FeedDog(){
+function addFoods() {
+ food1.getFoodStock();
 
-dog.addImage(dogimg2)
-
-foodobject.updateFoodStock(foodobject.getFoodStock()-1)
- database.ref('/').update({
-   Food:foodobject.getFoodStock(),
-   FeedTime:hour ()
- })
+ food1.updateFoodStock(foodCount + 1); 
 }
